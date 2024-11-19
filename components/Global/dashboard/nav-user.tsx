@@ -1,48 +1,47 @@
 "use client"
 
 import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
+	BadgeCheck,
+	ChevronsUpDown,
+	CreditCard,
+	LogOut,
 } from "lucide-react"
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
 } from "@/components/ui/avatar"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	useSidebar,
 } from "@/components/ui/sidebar"
 import { logout } from "@/actions/logout"
+import Link from "next/link"
 
 export function NavUser({
-  user,
+	user,
 }: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
+	user: {
+		name: string
+		email: string
+		avatar: string
+	}
 }) {
-  const { isMobile } = useSidebar()
+	const { isMobile } = useSidebar()
 
-  return (
+	return (
 		<SidebarMenu>
 			<SidebarMenuItem>
 				<DropdownMenu>
@@ -81,33 +80,27 @@ export function NavUser({
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
-						<DropdownMenuGroup>
-							<DropdownMenuItem>
-								<Sparkles />
-								Upgrade to Pro
-							</DropdownMenuItem>
-						</DropdownMenuGroup>
+
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
-							<DropdownMenuItem>
-								<BadgeCheck />
-								Account
-							</DropdownMenuItem>
+
+							<Link href="/dashboard/user">
+								<DropdownMenuItem className="cursor-pointer flex items-center gap-2">
+									<BadgeCheck />
+									Account
+								</DropdownMenuItem>
+							</Link>
+
 							<DropdownMenuItem>
 								<CreditCard />
-								Billing
+								Accounts & Billing
 							</DropdownMenuItem>
-							<DropdownMenuItem>
-								<Bell />
-								Notifications
-							</DropdownMenuItem>
+
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>
-							<button onClick={logout}>
-								<LogOut />
-								Log out
-							</button>
+						<DropdownMenuItem onClick={logout} className="cursor-pointer">
+							<LogOut />
+							Log out
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
