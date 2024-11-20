@@ -4,8 +4,32 @@ import db from '@/lib/db';
 
 export async function getAllPatients() {
 	try {
-		const patients = await db.patient.findMany();
-		return patients;
+		// Fetch patients with the doctor information
+		const patients = await db.patient.findMany({
+			include: {
+				doctor: true, // Include related doctor data
+			},
+		});
+
+		// Fetch additional doctor info for each patient (if necessary)
+		const patientsWithDoctorInfo = await Promise.all(
+			patients.map(async (patient) => {
+				if (patient.doctor) {
+					const doctorInfo = await db.employee.findUnique({
+						where: {
+							id: patient.doctor.id,
+						},
+					});
+					return {
+						...patient,
+						doctorInfo,
+					};
+				}
+				return patient;
+			})
+		);
+
+		return patientsWithDoctorInfo;
 	} catch (error) {
 		console.error('Error fetching patients:', error);
 		throw new Error('Failed to fetch patients.');
@@ -16,39 +40,33 @@ export async function getPatientById(patientId: number) {
 	try {
 		const patient = await db.patient.findUnique({
 			where: { id: patientId },
+			include: {
+				doctor: true,
+				medicalHistory: true,
+				prescriptions: true,
+				Bill: true,
+				Operation: true,
+			},
+		});
+
+		const doctorInformation = await db.employee.findUnique({
+			where: {
+				id: patient?.doctor.employeeId,
+			},
 		});
 
 		if (!patient) {
 			throw new Error('Patient not found.');
 		}
 
-		return patient;
+		return { ...patient, doctorInformation };
 	} catch (error) {
 		console.error('Error fetching patient:', error);
 		throw new Error('Failed to fetch patient.');
 	}
 }
 
-export async function createPatient(data: {
-	firstName: string;
-	lastName: string;
-	dateOfBirth: Date;
-	gender: string;
-	contactNumber?: string;
-	email?: string;
-	address?: string;
-}) {
-	try {
-		const patient = await db.patient.create({
-			data,
-		});
 
-		return patient;
-	} catch (error) {
-		console.error('Error creating patient:', error);
-		throw new Error('Failed to create patient.');
-	}
-}
 
 export async function updatePatient(
 	patientId: number,
@@ -133,4 +151,39 @@ export async function getPatientMedicalHistoryById(patientId: number) {
 		console.error('Error fetching medical history:', error);
 		throw new Error('Failed to fetch medical history.');
 	}
+}
+
+
+export async function createPatient(data: {
+	name: string;
+	status: 'Critical' | 'Good' | 'Bad' | 'Emergency';
+	age: number;
+	condition: string;
+	doctorId: number;
+}) {
+	const { doctorId, ...patientData } = data;
+	const patient = await db.patient.create({
+		data: {
+			...patientData,
+			doctor: {
+				connect: { id: doctorId },
+			},
+		},
+	});
+	return patient;
+}
+
+export async function assignDoctorToPatient(
+	patientId: string,
+	doctorId: string
+) {
+	const updatedPatient = await db.patient.update({
+		where: { id: patientId },
+		data: {
+			doctor: {
+				connect: { id: doctorId },
+			},
+		},
+	});
+	return updatedPatient;
 }

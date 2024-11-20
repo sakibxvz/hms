@@ -1,4 +1,5 @@
 import db from '@/lib/db';
+import { UserState } from '@/types';
 
 export const getUserbyUserName = async (username: string) => {
 	try {
@@ -25,7 +26,32 @@ export const getUserById = async (userId: string) => {
 		});
 		return { status: 200, user };
 	} catch (error) {
+		console.error('Error fetching user by ID:', error);
 		return null;
+	}
+};
+
+export const usernameExists = async (username: string) => {
+	try {
+		const user = await db.user.findUnique({
+			where: { username },
+		});
+		return user !== null; // Return true if user exists
+	} catch (error) {
+		console.error('Error checking username:', error);
+		return false;
+	}
+};
+
+export const emailExists = async (email: string) => {
+	try {
+		const user = await db.user.findUnique({
+			where: { email },
+		});
+		return user !== null; // Return true if email exists
+	} catch (error) {
+		console.error('Error checking email:', error);
+		return false;
 	}
 };
 
@@ -72,53 +98,49 @@ export const updateUserEmail = async (userId: string, newEmail: string) => {
 
 export const updateUserProfile = async (
 	userId: string,
-	updatedData: {
-		username?: string;
-		email?: string;
-		role: 'USER' | 'ADMIN';
-		image?: string;
-	}
-) => {
-	try {
-		const updatedUser = await db.user.update({
-			where: { id: userId },
-			data: {
-				...updatedData, // Update user profile info with provided data
-			},
-			select: {
-				id: true,
-				username: true,
-				email: true,
-				role: true,
-				image: true,
-			},
-		});
-		return {
-			status: 200,
-			message: 'Profile updated successfully',
-			user: updatedUser,
-		};
-	} catch (error) {
-		console.error('Error updating user profile:', error);
-		return null;
-	}
+	updatedData: Partial<UserState>
+): Promise<UserState> => {
+	const updatedUser = await db.user.update({
+		where: { id: userId },
+		data: updatedData,
+		select: {
+			id: true,
+			username: true,
+			email: true,
+			role: true,
+			image: true,
+		},
+	});
+	return updatedUser;
 };
 
 export const updateUserPassword = async (
 	userId: string,
+	currentPassword: string,
 	newPassword: string
 ) => {
 	try {
+		// Fetch the current password from the database
+		const user = await db.user.findUnique({
+			where: { id: userId },
+			select: { password: true },
+		});
+
+		// Verify current password
+		if (!user || user.password !== currentPassword) {
+			return { status: 400, message: 'Incorrect current password' };
+		}
+
+		// Update the password
 		await db.user.update({
 			where: { id: userId },
-			data: {
-				password: newPassword, // Store the password as is (plain text)
-			},
+			data: { password: newPassword },
 		});
+
 		return { status: 200, message: 'Password updated successfully' };
 	} catch (error) {
 		console.error('Error updating user password:', error);
-		return null;
+		return { status: 500, message: 'Internal Server Error' };
 	}
 };
 

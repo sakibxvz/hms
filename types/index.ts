@@ -3,5 +3,5 @@ export interface UserState {
 	username: string;
 	email: string;
 	role: 'ADMIN' | 'USER';
-	image?: string;
+	image?: string | null;
 }

@@ -20,7 +20,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 				password: {},
 			},
 			async authorize(credentials, req) {
-				
 				const { username, password } = credentials as {
 					username: string;
 					password: string;
@@ -54,9 +53,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 			if (!token.sub) return token;
 			const existingUser = await getUserById(token.sub);
 			if (!existingUser) return token;
-			token.name = existingUser.username;
-			token.email = existingUser.email;
-			token.role = existingUser.role;
+			token.id = existingUser.user?.id;
+			token.name = existingUser.user?.username;
+			token.email = existingUser.user?.email;
+			token.role = existingUser.user?.role;
 
 			return token;
 		},
@@ -69,6 +69,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 				if (typeof token.name === 'string') {
 					session.user.name = token.name;
 				}
+				if (typeof token.id === 'string') {
+					session.user.id = token.id;
+				}
 				if (typeof token.email === 'string') {
 					session.user.email = token.email;
 				}
@@ -79,4 +82,4 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 			return session;
 		},
 	},
-}) 
+});

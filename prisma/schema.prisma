@@ -21,6 +21,13 @@ enum Department {
   DOCTOR
 }
 
+enum PatientStatus {
+  Critical
+  Good
+  Bad
+  Emergency
+}
+
 enum DayOfWeek {
   MONDAY
   TUESDAY
@@ -142,7 +149,14 @@ model Patient {
   lastName       String
   dateOfBirth    DateTime
   gender         String
+  BMI            Float            @default(22.4)
+  Weight         Int              @default(92)
+  Height         Int              @default(175)
+  BP             Int              @default(124)
+  Address        String?          @default("Dhaka")
+  Occupation     String?          @default("Unknown")
   doctorId       Int
+  status         PatientStatus    @default(Good)
   doctor         Doctor           @relation(fields: [doctorId], references: [id])
   medicalHistory MedicalHistory[] // One-to-many relationship with MedicalHistory
   createdAt      DateTime         @default(now())

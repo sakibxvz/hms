@@ -4,7 +4,6 @@ import * as React from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
 import { useTheme } from 'next-themes';
 import {
 	Moon,
@@ -17,13 +16,20 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { logout } from '@/actions/logout';
 
 export default function Home() {
 	const { theme, setTheme } = useTheme();
-	const [date, setDate] = React.useState<Date | undefined>(new Date());
-
 	const { data: session, status } = useSession();
+	const [isClient, setIsClient] = React.useState(false);
+
+	React.useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	if (!isClient) {
+		return null;
+	}
+
 	const isAuthenticated = status === 'authenticated';
 
 	return (
@@ -58,9 +64,9 @@ export default function Home() {
 								<Button>
 									<Link href='/dashboard'>Go to Dashboard</Link>
 								</Button>
-								{/* <Button variant='ghost' onClick={logout}>
-									Logout
-								</Button> */}
+								<Button variant='ghost'>
+									<Link href='/auth/logout'>Logout</Link>
+								</Button>
 							</>
 						)}
 					</div>
@@ -73,81 +79,48 @@ export default function Home() {
 						Modern Healthcare Management
 					</h1>
 					<p className='text-xl text-muted-foreground max-w-2xl mx-auto'>
-						Streamline your hospital operations with our comprehensive
-						management system
+						Streamline your healthcare operations with our comprehensive management system.
 					</p>
 				</div>
-				<div className='flex justify-center'>
-					<Image
-						src='https://cdn.dribbble.com/userupload/17605786/file/original-e6ff7f8f3a3c73ae5455bc5cfc419bd7.png?resize=752x'
-						alt='Medical Interface'
-						width={600}
-						height={400}
-						className='rounded-lg shadow-lg'
-					/>
-				</div>
+
 			</section>
-			{/* Features Section */}
-			<section className='container py-24 space-y-8 px-10'>
-				<h2 className='text-3xl font-bold text-center'>
-					Comprehensive Features
-				</h2>
-				<div className='grid gap-8 md:grid-cols-2 lg:grid-cols-4'>
+			{/* Analytics Section */}
+			<section className='container py-16 space-y-12'>
+				<div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
 					<Card>
-						<CardContent className='pt-6 space-y-2'>
-							<Users className='h-8 w-8 text-primary' />
-							<h3 className='font-semibold'>Patient Management</h3>
+						<CardContent className='flex flex-col items-center text-center'>
+							<ClipboardList className='h-8 w-8 text-primary mb-4' />
+							<h3 className='font-semibold text-lg'>Patient Management</h3>
 							<p className='text-sm text-muted-foreground'>
-								Efficiently manage patient records and appointments
+								Manage patient records and appointments
 							</p>
 						</CardContent>
 					</Card>
 					<Card>
-						<CardContent className='pt-6 space-y-2'>
-							<ClipboardList className='h-8 w-8 text-primary' />
-							<h3 className='font-semibold'>Medical Records</h3>
+						<CardContent className='flex flex-col items-center text-center'>
+							<Users className='h-8 w-8 text-primary mb-4' />
+							<h3 className='font-semibold text-lg'>Doctor Management</h3>
 							<p className='text-sm text-muted-foreground'>
-								Secure digital storage of all medical documentation
+								Schedule and manage doctor appointments
 							</p>
 						</CardContent>
 					</Card>
 					<Card>
-						<CardContent className='pt-6 space-y-2'>
-							<Activity className='h-8 w-8 text-primary' />
-							<h3 className='font-semibold'>Real-time Monitoring</h3>
+						<CardContent className='flex flex-col items-center text-center'>
+							<Activity className='h-8 w-8 text-primary mb-4' />
+							<h3 className='font-semibold text-lg'>Laboratory Management</h3>
 							<p className='text-sm text-muted-foreground'>
-								Track patient vitals and department activities
+								Track lab tests and results
 							</p>
 						</CardContent>
 					</Card>
 					<Card>
-						<CardContent className='pt-6 space-y-2'>
-							<BarChart className='h-8 w-8 text-primary' />
-							<h3 className='font-semibold'>Analytics</h3>
+						<CardContent className='flex flex-col items-center text-center'>
+							<BarChart className='h-8 w-8 text-primary mb-4' />
+							<h3 className='font-semibold text-lg'>Analytics</h3>
 							<p className='text-sm text-muted-foreground'>
 								Comprehensive reports and insights
 							</p>
-						</CardContent>
-					</Card>
-				</div>
-			</section>
-			{/* Calendar Demo Section */}
-			<section className='container py-24 space-y-8'>
-				<div className='text-center space-y-4'>
-					<h2 className='text-3xl font-bold'>Smart Scheduling</h2>
-					<p className='text-muted-foreground max-w-2xl mx-auto'>
-						Efficient appointment management and resource allocation
-					</p>
-				</div>
-				<div className='flex justify-center'>
-					<Card className='max-w-sm'>
-						<CardContent className='p-4'>
-							<Calendar
-								mode='single'
-								selected={date}
-								onSelect={setDate}
-								className='rounded-md'
-							/>
 						</CardContent>
 					</Card>
 				</div>

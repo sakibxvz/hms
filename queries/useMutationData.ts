@@ -23,15 +23,16 @@ export const useMutationData = (
 			return toast(
 				data?.status === 200 || data?.status === 201 ? 'Success' : 'Error',
 				{
-					description: data?.message,
+					description: data?.data,
 				}
 			);
 		},
-		 onSettled: async () => {
-      if (queryKey) {
-        await client.invalidateQueries({ queryKey: [queryKey], exact: true });
-      }
-    },
+		onSettled: async () => {
+			return await client.invalidateQueries({
+				queryKey: [queryKey],
+				exact: true,
+			});
+		},
 	});
 
 	return { mutate, isPending };

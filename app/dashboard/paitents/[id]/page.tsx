@@ -14,18 +14,61 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Coffee, Edit2, MoreHorizontal, Phone, Mail, MapPin, Clock, Activity, Pill, Cookie } from 'lucide-react'
+import { useParams } from "next/navigation"
+import { getPatientById } from "@/actions/paitent"
+import { useEffect, useState } from "react"
+import { Spinner } from "@/components/ui/spinner"
+import { calculateAge, formatDate } from "@/lib/utils"
+import { getEmployeeById } from "@/actions/employee"
+import { Separator } from "@/components/ui/separator"
+import Link from "next/link"
 
 export default function Component() {
+    const { id: paitentId } = useParams()
+
+    const [patient, setPatient] = useState<{ [key: string]: any }>({});
+    const [loading, setLoading] = useState<boolean>(true);  // Track loading state
+    const [error, setError] = useState<string | null>(null); // To track errors
+
+    // Fetch patient data when paitentId changes
+    useEffect(() => {
+        const fetchPatientData = async () => {
+            setLoading(true);
+            setError(null); // Clear any previous errors
+            try {
+                const result = await getPatientById(Number(paitentId)); // Assuming getPatientById is an async function
+                setPatient(result); // Set patient data when loaded
+            } catch (err) {
+                setError("Failed to fetch patient data"); // Handle errors
+            } finally {
+                setLoading(false); // Stop loading once the request is complete
+            }
+        };
+
+        if (paitentId) {
+            fetchPatientData();
+        }
+    }, [paitentId]); // This will re-run if paitentId changes
+
+    // Rendering logic
+    if (loading) {
+        return <div className="container m-auto "><Spinner /></div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
+
     return (
         <div className="container mx-auto p-6">
+            <p>{JSON.stringify(patient)}</p>
+            <Separator />
             <Tabs defaultValue="profile" className="space-y-6">
                 <TabsList>
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="profile">Patient profile</TabsTrigger>
-                    <TabsTrigger value="bgl">BGL Analysis</TabsTrigger>
+                    <TabsTrigger value="bill">Bill</TabsTrigger>
                     <TabsTrigger value="medications">Medications</TabsTrigger>
                     <TabsTrigger value="lab">Lab results</TabsTrigger>
-                    <TabsTrigger value="goals">Mini Goals</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="profile" className="space-y-6">
@@ -33,11 +76,11 @@ export default function Component() {
                         <div className="flex gap-6">
                             <Avatar className="w-24 h-24">
                                 <AvatarImage src="/placeholder.svg" alt="Ahmed Ali Hussain" />
-                                <AvatarFallback>AH</AvatarFallback>
+                                <AvatarFallback>{patient.firstName?.[0]}{patient.lastName?.[0]}</AvatarFallback>
                             </Avatar>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                    <h1 className="text-2xl font-bold">Ahmed Ali Hussain</h1>
+                                    <h1 className="text-2xl font-bold">{patient.firstName} {patient.lastName}</h1>
                                     <Button variant="ghost" size="icon">
                                         <Phone className="h-4 w-4" />
                                     </Button>
@@ -47,15 +90,15 @@ export default function Component() {
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <MapPin className="h-4 w-4" />
-                                    Elshikh zayed Giza
+                                    {patient.Address}
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Activity className="h-4 w-4" />
-                                    Accountant
+                                    {patient.Occupation}
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Clock className="h-4 w-4" />
-                                    12 Dec 1992 (38 years)
+                                    {`${formatDate(patient.dateOfBirth)} (${calculateAge(patient.dateOfBirth)} age)`}
                                 </div>
                             </div>
                         </div>
@@ -68,29 +111,28 @@ export default function Component() {
                     <div className="grid grid-cols-4 gap-4">
                         <Card>
                             <CardContent className="pt-6">
-                                <div className="text-2xl font-bold">22.4</div>
-                                <div className="text-sm text-muted-foreground">BMI</div>
-                                <Badge className="mt-2 bg-green-100 text-green-800">+10</Badge>
+                                <div className="text-2xl font-bold"> {patient.BMI}</div>
+                                <div className="text-sm text-muted-foreground"> BMI</div>
+
                             </CardContent>
                         </Card>
                         <Card>
                             <CardContent className="pt-6">
-                                <div className="text-2xl font-bold">92 kg</div>
+                                <div className="text-2xl font-bold">{patient.Weight} kg</div>
                                 <div className="text-sm text-muted-foreground">Weight</div>
-                                <Badge className="mt-2 bg-green-100 text-green-800">+10 kg</Badge>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardContent className="pt-6">
-                                <div className="text-2xl font-bold">175 cm</div>
+                                <div className="text-2xl font-bold">{patient.Height} cm</div>
                                 <div className="text-sm text-muted-foreground">Height</div>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardContent className="pt-6">
-                                <div className="text-2xl font-bold">124/80</div>
+                                <div className="text-2xl font-bold">{patient.BP} /80</div>
                                 <div className="text-sm text-muted-foreground">Blood pressure</div>
-                                <Badge className="mt-2 bg-green-100 text-green-800">+10</Badge>
+
                             </CardContent>
                         </Card>
                     </div>
@@ -98,85 +140,86 @@ export default function Component() {
                     <div className="grid grid-cols-2 gap-6">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-base font-medium">Timeline</CardTitle>
-                                <Button variant="ghost" size="sm">
-                                    Edit
-                                </Button>
+                                <CardTitle className="text-base font-medium">Medical history</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {[
-                                        { date: "Dec 2022", condition: "Pre-diabetic", value: "A1c: 10.4" },
-                                        { date: "JAN 2022", condition: "Type 2", value: "A1c: 10.4" },
-                                        { date: "JUL 2021", condition: "Chronic thyroid disorder", value: "A1c: 10.4" },
-                                        { date: "JUL 2021", condition: "Angina Pectoris", value: "A1c: 10.4" },
-                                        { date: "JUL 2021", condition: "Stroke", value: "A1c: 10.4" },
-                                    ].map((item, i) => (
+                                    {patient.medicalHistory.map((history, i: number) => (
                                         <div key={i} className="flex items-start">
-                                            <div className="flex flex-col items-center mr-4">
+                                            <div className="flex flex-col items-center mr-4 mt-2">
                                                 <div className="w-2 h-2 rounded-full bg-primary" />
                                                 {i !== 4 && <div className="w-0.5 h-full bg-border" />}
                                             </div>
                                             <div>
-                                                <div className="text-sm text-muted-foreground">{item.date}</div>
-                                                <div className="font-medium">{item.condition}</div>
-                                                <div className="text-sm text-muted-foreground">{item.value}</div>
+                                                <div className="text-sm text-muted-foreground">{formatDate(history.date)}</div>
+                                                <div className="font-medium">{history.condition}</div>
+                                                <div className="text-sm text-muted-foreground">{history.diagnosis}</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             </CardContent>
                         </Card>
+                        
 
                         <div className="space-y-6">
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-base font-medium">Medical history</CardTitle>
-                                    <Button variant="ghost" size="sm">
-                                        Edit
-                                    </Button>
+                                    <CardTitle className="text-base font-medium">Assinged Doctor</CardTitle>
+
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div>
-                                        <div className="text-sm font-medium">Chronic disease</div>
-                                        <div className="text-sm text-muted-foreground">IHD, Obesity, Chronic thyroid disorder</div>
+                                        <Link href={`/dashboard/doctor/${patient.doctor.id}`}>
+                                            <p className="text-sm font-medium hover:underline">{patient.doctorInformation.firstName}  {patient.doctorInformation.lastName}</p>
+                                        </Link>
+                                        <p className="text-sm text-muted-foreground">Specalization: {patient.doctor.specialization}</p>
                                     </div>
-                                    <div>
-                                        <div className="text-sm font-medium">Diabetes Emergencies</div>
-                                        <div className="text-sm text-muted-foreground">Diabetic Ketoacidosis</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-sm font-medium">Family disease</div>
-                                        <div className="text-sm text-muted-foreground">Obesity (Father)</div>
-                                    </div>
+
                                 </CardContent>
                             </Card>
 
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-base font-medium">Diet</CardTitle>
-                                    <Button variant="ghost" size="sm">
-                                        Edit
-                                    </Button>
+                                    <CardTitle className="text-base font-medium">Operation</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-2">
-                                            <Coffee className="h-4 w-4" />
-                                            <span>6 Cups - per day</span>
+                                {patient.Operation.map((operation) => (
+                                    <CardContent key={operation.id} className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2">
+
+                                                <span>{operation.name}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Cookie className="h-4 w-4" />
-                                            <span>3 Cups - per day</span>
+                                        <div>
+                                            <div className="text-sm">{operation.description}</div>
+                                            <div className="text-sm">Cost: ${operation.cost.toFixed(2)}</div>
+                                            <div className="text-sm">Date: {new Date(operation.date).toLocaleDateString()}</div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-sm">Intermittent fasting,Intermittent fasting</div>
-                                        <div className="text-sm">Table sugar, Daily Avg 3/6</div>
-                                        <div className="text-sm">Lactose,Beans</div>
-                                    </div>
-                                </CardContent>
+                                    </CardContent>
+                                ))}
                             </Card>
+                            {/* pescription  */}
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-base font-medium">Prescriptions</CardTitle>
+                                </CardHeader>
+                                {patient.prescriptions.map((prescription) => (
+                                    <CardContent key={prescription.id} className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2">
+                                                <span>Prescription ID: {prescription.id}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-sm">Dosage: {prescription.dosage}</div>
+                                            <div className="text-sm">Instructions: {prescription.instructions}</div>
+                                            <div className="text-sm">Date: {new Date(prescription.createdAt).toLocaleDateString()}</div>
+                                        </div>
+                                    </CardContent>
+                                ))}
+                            </Card>
+
                         </div>
                     </div>
 
@@ -191,63 +234,63 @@ export default function Component() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Ind.</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Sig.</TableHead>
+                                        <TableHead>Instruction</TableHead>
+                                        <TableHead>Medicine Name</TableHead>
                                         <TableHead>Start date</TableHead>
                                         <TableHead>Assign by</TableHead>
-                                        <TableHead>Note</TableHead>
-                                        <TableHead></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {[
-                                        { name: "ACTRAPID ® HM 1", desc: "Amaryl 1 mg", status: "Adherent" },
-                                        { name: "Panadol 1000m", desc: "Vitacid 1000m", status: "Somehow adherent" },
-                                        { name: "Amaryl 1 mg", desc: "Amaryl 1 mg", status: "Not adherent" },
-                                    ].map((med, i) => (
-                                        <TableRow key={i}>
+                                    {patient.prescriptions.map((prescription) => (
+                                        <TableRow key={prescription.id}>
                                             <TableCell className="font-medium">
                                                 <div className="flex items-center gap-2">
                                                     <Pill className="h-4 w-4" />
                                                     <div>
-                                                        <div>{med.name}</div>
-                                                        <div className="text-sm text-muted-foreground">{med.desc}</div>
+                                                        <div>{prescription.dosage}</div>
+                                                        <div className="text-sm text-muted-foreground">{prescription.instructions}</div>
                                                     </div>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>--</TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={
-                                                        med.status === "Adherent"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : med.status === "Somehow adherent"
-                                                                ? "bg-yellow-100 text-yellow-800"
-                                                                : "bg-red-100 text-red-800"
-                                                    }
-                                                >
-                                                    {med.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>--</TableCell>
-                                            <TableCell>--</TableCell>
-                                            <TableCell>Patient</TableCell>
-                                            <TableCell>--</TableCell>
-                                            <TableCell>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </TableCell>
+                                            </TableCell>                                           
+                                            <TableCell>{prescription.dosage}</TableCell>
+                                            <TableCell>{new Date(prescription.createdAt).toLocaleDateString()}</TableCell>
+                                            <TableCell>Doctor</TableCell>
+                                           
                                         </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
                     </Card>
+
                 </TabsContent>
+
+                <TabsContent value="bill" className="space-y-6">
+                    <div className="flex flex-col justify-between space-y-4 w-full">
+                        {patient.Bill.map((bill) => (
+                            <div key={bill.id} className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                    <div className="text-lg font-semibold text-gray-900 dark:text-white">Bill ID: {bill.id}</div>
+                                    <div
+                                        className={`text-sm px-2 py-1 rounded-full ${bill.status === "Paid"
+                                                ? "bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-200"
+                                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-200"
+                                            }`}
+                                    >
+                                        {bill.status}
+                                    </div>
+                                </div>
+                                <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <div>Total Amount: ${bill.totalAmount.toFixed(2)}</div>
+                                    <div>Created At: {new Date(bill.createdAt).toLocaleDateString()}</div>
+                                    <div>Updated At: {new Date(bill.updatedAt).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </TabsContent>
+
+
             </Tabs>
         </div>
     )

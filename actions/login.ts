@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { getUserbyUserName } from './user';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
-import { DEFAULT_LOGIN_REDIRECT } from '@/routes/route';
+import { DEFAULT_LOGIN_REDIRECT } from '@/routes/route';;
 
 export const login = async (
 	values: z.infer<typeof signInSchema>,
