@@ -1,12 +1,15 @@
 'use server';
 
 import db from '@/lib/db'; // Ensure this imports your Prisma client
-import { Prisma } from '@prisma/client'; // For proper type usage
 
 // Fetch all doctors
 export async function getAllDoctors() {
 	try {
-		const doctors = await db.doctor.findMany();
+		const doctors = await db.doctor.findMany({
+			include: {
+				employee:true
+			}
+		});
 		return doctors;
 	} catch (error) {
 		console.error('Error fetching all doctors:', error);
@@ -82,15 +85,46 @@ export async function updateDoctor(
 		firstName: string;
 		lastName: string;
 		specialization: string;
-		contactNumber?: string;
-		email?: string;
+		medicalLicense?: string;
 	}>
 ) {
 	try {
-		const updatedDoctor = await db.doctor.update({
-			where: { id },
-			data,
+		// Extract fields related to `doctor` and `employee`
+		const { firstName, lastName, specialization, medicalLicense, ...rest } =
+			data;
+
+		// Update doctor-specific fields
+		const doctorUpdate = {
+			...(specialization && { specialization }),
+			...(medicalLicense && { medicalLicense }),
+			...rest,
+		};
+
+		// Update employee-specific fields
+		const employeeUpdate = {
+			...(firstName && { firstName }),
+			...(lastName && { lastName }),
+		};
+
+		// Perform the update using a transaction
+		const updatedDoctor = await db.$transaction(async (transaction) => {
+			// Update the `doctor` table
+			const updatedDoctorData = await transaction.doctor.update({
+				where: { id },
+				data: doctorUpdate,
+			});
+
+			// Update the related `employee` table if needed
+			if (Object.keys(employeeUpdate).length > 0) {
+				await transaction.employee.update({
+					where: { id: updatedDoctorData.employeeId },
+					data: employeeUpdate,
+				});
+			}
+
+			return updatedDoctorData;
 		});
+
 		return updatedDoctor;
 	} catch (error) {
 		console.error('Error updating doctor:', error);

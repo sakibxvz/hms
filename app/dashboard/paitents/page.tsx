@@ -27,9 +27,6 @@ import {
     Search,
     MoreVertical,
     UserPlus,
-    Calendar,
-    Clock,
-    Filter,
     RefreshCcw,
     AlertTriangle,
     CheckCircle,
@@ -40,8 +37,19 @@ import { getAllPatients } from "@/actions/paitent";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import AddPatient from "@/components/Global/paitent/AddPaitent";
 
-const getStatusColor = (status:string) => {
+const getStatusColor = (status: string) => {
     return status === "Critical"
         ? "bg-red-100 text-red-700"
         : status === "Emergency"
@@ -109,11 +117,23 @@ export default function PatientsPage() {
                     <h1 className="text-3xl font-bold">Patient Management</h1>
                     <p className="mt-1">Manage and monitor patient records</p>
                 </div>
-                <Link href='/dashboard/paitents/add'>
-                <Button className="flex items-center gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    Add New Patient
-                </Button></Link>
+
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button className="flex items-center gap-2">
+                            <UserPlus className="h-4 w-4" />
+                            Add New Patient
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl">
+                        <div className="flex items-center space-x-2">
+                            <AddPatient />
+                        </div>
+                       
+                    </DialogContent>
+                </Dialog>
+
+               
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -311,12 +331,12 @@ export default function PatientsPage() {
                                                 </p>
                                                 <span
                                                     className={`inline-block px-2 py-1 text-xs font-semibold rounded ${patient.status === "Critical"
-                                                            ? "bg-red-100 text-red-700"
-                                                            : patient.status === "Emergency"
-                                                                ? "bg-yellow-100 text-yellow-700"
-                                                                : patient.status === "Good"
-                                                                    ? "bg-green-100 text-green-700"
-                                                                    : "bg-gray-100 text-gray-700"
+                                                        ? "bg-red-100 text-red-700"
+                                                        : patient.status === "Emergency"
+                                                            ? "bg-yellow-100 text-yellow-700"
+                                                            : patient.status === "Good"
+                                                                ? "bg-green-100 text-green-700"
+                                                                : "bg-gray-100 text-gray-700"
                                                         }`}
                                                 >
                                                     {patient.status}

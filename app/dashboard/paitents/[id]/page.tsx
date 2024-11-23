@@ -61,8 +61,7 @@ export default function Component() {
 
     return (
         <div className="container mx-auto p-6">
-            <p>{JSON.stringify(patient)}</p>
-            <Separator />
+            {/* <p>{JSON.stringify(patient)}</p> */}
             <Tabs defaultValue="profile" className="space-y-6">
                 <TabsList>
                     <TabsTrigger value="profile">Patient profile</TabsTrigger>
@@ -138,32 +137,38 @@ export default function Component() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-base font-medium">Medical history</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    {patient.medicalHistory.map((history, i: number) => (
-                                        <div key={i} className="flex items-start">
-                                            <div className="flex flex-col items-center mr-4 mt-2">
-                                                <div className="w-2 h-2 rounded-full bg-primary" />
-                                                {i !== 4 && <div className="w-0.5 h-full bg-border" />}
+
+                        {/* Medical History  */}
+                        {
+                            patient.medicalHistory.length > 0 && <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-base font-medium">Medical history</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        {patient.medicalHistory.map((history, i: number) => (
+                                            <div key={i} className="flex items-start">
+                                                <div className="flex flex-col items-center mr-4 mt-2">
+                                                    <div className="w-2 h-2 rounded-full bg-primary" />
+                                                    {i !== 4 && <div className="w-0.5 h-full bg-border" />}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm text-muted-foreground">{formatDate(history.date)}</div>
+                                                    <div className="font-medium">{history.condition}</div>
+                                                    <div className="text-sm text-muted-foreground">{history.diagnosis}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div className="text-sm text-muted-foreground">{formatDate(history.date)}</div>
-                                                <div className="font-medium">{history.condition}</div>
-                                                <div className="text-sm text-muted-foreground">{history.diagnosis}</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        }
+
 
                         <div className="space-y-6">
-                            <Card>
+
+                            {/* Assinged Doctor  */}
+                            {patient.doctorId && <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-base font-medium">Assinged Doctor</CardTitle>
 
@@ -177,9 +182,10 @@ export default function Component() {
                                     </div>
 
                                 </CardContent>
-                            </Card>
+                            </Card>}
 
-                            <Card>
+                            {/* Piatnet Operation  */}
+                            {patient.Operation.length > 0 && <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-base font-medium">Operation</CardTitle>
                                 </CardHeader>
@@ -198,9 +204,10 @@ export default function Component() {
                                         </div>
                                     </CardContent>
                                 ))}
-                            </Card>
+                            </Card>}
+
                             {/* pescription  */}
-                            <Card>
+                            {patient.prescriptions.length > 0 && <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-base font-medium">Prescriptions</CardTitle>
                                 </CardHeader>
@@ -218,17 +225,16 @@ export default function Component() {
                                         </div>
                                     </CardContent>
                                 ))}
-                            </Card>
+                            </Card>}
+
 
                         </div>
                     </div>
 
-                    <Card>
+                    {patient.prescriptions.length > 0 && <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-base font-medium">Medications</CardTitle>
-                            <Button variant="ghost" size="sm">
-                                Edit
-                            </Button>
+                            
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -251,30 +257,31 @@ export default function Component() {
                                                         <div className="text-sm text-muted-foreground">{prescription.instructions}</div>
                                                     </div>
                                                 </div>
-                                            </TableCell>                                           
+                                            </TableCell>
                                             <TableCell>{prescription.dosage}</TableCell>
                                             <TableCell>{new Date(prescription.createdAt).toLocaleDateString()}</TableCell>
                                             <TableCell>Doctor</TableCell>
-                                           
+
                                         </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
-                    </Card>
+                    </Card>}
+
 
                 </TabsContent>
 
                 <TabsContent value="bill" className="space-y-6">
-                    <div className="flex flex-col justify-between space-y-4 w-full">
+                    {patient.Bill.length > 0 ? <div className="flex flex-col justify-between space-y-4 w-full">
                         {patient.Bill.map((bill) => (
                             <div key={bill.id} className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-4">
                                 <div className="flex justify-between items-center">
                                     <div className="text-lg font-semibold text-gray-900 dark:text-white">Bill ID: {bill.id}</div>
                                     <div
                                         className={`text-sm px-2 py-1 rounded-full ${bill.status === "Paid"
-                                                ? "bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-200"
-                                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-200"
+                                            ? "bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-200"
+                                            : "bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-200"
                                             }`}
                                     >
                                         {bill.status}
@@ -287,7 +294,8 @@ export default function Component() {
                                 </div>
                             </div>
                         ))}
-                    </div>
+                    </div> : <div className="m-5"><p className="font-bold text-2xl">No Bill Updated yet</p></div>}
+
                 </TabsContent>
 
 

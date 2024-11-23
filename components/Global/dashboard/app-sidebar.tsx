@@ -60,12 +60,9 @@ const data = {
 			items: [
 				{
 					title: 'All Doctors',
-					url: '#',
+					url: '/dashboard/doctors',
 				},
-				{
-					title: 'Schedule',
-					url: '#',
-				},
+				
 				{
 					title: 'Add Doctor',
 					url: '#',
@@ -74,7 +71,7 @@ const data = {
 		},
 		{
 			title: 'Laboratory Management',
-			url: '#',
+			url: '/dashboard/lab',
 			icon: BookOpen,
 			items: [
 				{
@@ -89,7 +86,7 @@ const data = {
 		},
 		{
 			title: 'Pharmacy Management',
-			url: '#',
+			url: '/dashboard/pharmacy',
 			icon: Settings2,
 			items: [
 				{
@@ -105,18 +102,6 @@ const data = {
 					url: '#',
 				},
 			],
-		},
-	],
-	navSecondary: [
-		{
-			title: 'Support',
-			url: '#',
-			icon: LifeBuoy,
-		},
-		{
-			title: 'Feedback',
-			url: '#',
-			icon: Send,
 		},
 	],
 	projects: [
@@ -158,7 +143,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarContent>
 				<NavMain items={data.navMain} />
 				<NavProjects projects={data.projects} />
-				<NavSecondary items={data.navSecondary} className='mt-auto' />
 			</SidebarContent>
 			<SidebarFooter>
 				<NavUser />

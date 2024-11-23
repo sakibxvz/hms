@@ -155,23 +155,50 @@ export async function getPatientMedicalHistoryById(patientId: number) {
 
 
 export async function createPatient(data: {
-	name: string;
+	firstName: string;
+	lastName: string;
+	dateOfBirth: string; // Date of birth as a string
+	gender: 'Male' | 'Female' | 'Other';
+	BMI: number;
+	Weight: number;
+	Height: number;
+	BP: number;
+	Address?: string;
+	Occupation?: string;
 	status: 'Critical' | 'Good' | 'Bad' | 'Emergency';
-	age: number;
-	condition: string;
 	doctorId: number;
 }) {
-	const { doctorId, ...patientData } = data;
-	const patient = await db.patient.create({
-		data: {
-			...patientData,
-			doctor: {
-				connect: { id: doctorId },
+	try {
+		// Convert dateOfBirth to a proper Date object
+		const formattedDateOfBirth = new Date(data.dateOfBirth);
+
+		// Create the patient record in the database
+		const patient = await db.patient.create({
+			data: {
+				firstName: data.firstName,
+				lastName: data.lastName,
+				dateOfBirth: formattedDateOfBirth,
+				gender: data.gender,
+				BMI: data.BMI,
+				Weight: data.Weight,
+				Height: data.Height,
+				BP: data.BP,
+				Address: data.Address || null, // Optional field
+				Occupation: data.Occupation || null, // Optional field
+				status: data.status,
+				doctor: {
+					connect: { id: data.doctorId }, // Associate with the specified doctor
+				},
 			},
-		},
-	});
-	return patient;
+		});
+
+		return patient;
+	} catch (error) {
+		console.error('Error creating patient:', error);
+		throw new Error('Failed to create the patient.');
+	}
 }
+
 
 export async function assignDoctorToPatient(
 	patientId: string,

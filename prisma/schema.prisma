@@ -155,7 +155,7 @@ model Patient {
   BP             Int              @default(124)
   Address        String?          @default("Dhaka")
   Occupation     String?          @default("Unknown")
-  doctorId       Int
+  doctorId       Int              @default(1)
   status         PatientStatus    @default(Good)
   doctor         Doctor           @relation(fields: [doctorId], references: [id])
   medicalHistory MedicalHistory[] // One-to-many relationship with MedicalHistory
